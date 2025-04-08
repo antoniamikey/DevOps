@@ -19,3 +19,8 @@ deploy:
       - deployment.yaml
       - service.yaml
       - ingress.yaml
+profiles:
+  - name: ghcr
+    build:
+      local:
+        push: true
