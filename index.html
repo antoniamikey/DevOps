@@ -1,72 +1,237 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Skaffold Demo</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #fdf6f9;
-      color: #333;
-      text-align: center;
-      padding: 3rem;
-    }
+<meta charset="UTF-8">
+<title>Skaffold Demo</title>
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #fdf6f9;
+  color: #333;
+  text-align: center;
+  padding: 3rem;
+  overflow-x: hidden;
+}
+h1 {
+  color: #ff69b4;
+  font-size: 3rem;
+}
+h2 {
+  color: #555;
+  font-weight: 400;
+}
+.heart {
+  font-size: 4rem;
+  animation: pulse 1s infinite alternate;
+  margin-top: 2rem;
+}
+@keyframes pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.2); }
+}
+.button {
+  margin-top: 2rem;
+  padding: 0.8rem 1.5rem;
+  background-color: #ffb6c1;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.button:hover {
+  background-color: #ff69b4;
+  color: white;
+}
 
-    h1 {
-      color: #ff69b4;
-      font-size: 3rem;
-    }
+/* Regenbogenkatze Animation */
+.rainbow-cat {
+  position: fixed;
+  bottom: 10px;
+  left: -150px;
+  font-size: 50px;
+  animation: cat-run 8s linear infinite;
+}
 
-    h2 {
-      color: #555;
-      font-weight: 400;
-    }
+@keyframes cat-run {
+  0% {
+    left: -150px;
+    transform: scaleX(1);
+  }
+  45% {
+    left: 100%;
+    transform: scaleX(1);
+  }
+  50% {
+    left: 100%;
+    transform: scaleX(-1);
+  }
+  95% {
+    left: -150px;
+    transform: scaleX(-1);
+  }
+  100% {
+    left: -150px;
+    transform: scaleX(1);
+  }
+}
 
-    .heart {
-      font-size: 4rem;
-      animation: pulse 1s infinite alternate;
-      margin-top: 2rem;
-    }
+/* Regenbogentext-Effekt */
+.rainbow-text {
+  background-image: linear-gradient(to right, violet, indigo, blue, green, yellow, orange, red);
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: rainbow-move 8s linear infinite;
+  background-size: 200% auto;
+}
 
-    @keyframes pulse {
-      from { transform: scale(1); }
-      to { transform: scale(1.2); }
-    }
+@keyframes rainbow-move {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
 
-    .button {
-      margin-top: 2rem;
-      padding: 0.8rem 1.5rem;
-      background-color: #ffb6c1;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
+/* Konfetti-Effekt für den Button */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 999;
+}
 
-    .button:hover {
-      background-color: #ff69b4;
-      color: white;
-    }
-  </style>
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  opacity: 0;
+}
+
+.floating-hearts-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 999; /* sichtbar über allem */
+}
+
+.floating-heart {
+  position: absolute;
+  font-size: 20px;
+  bottom: 0;
+  opacity: 0.8;
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+</style>
 </head>
 <body>
-  <h1>Hello from Skaffold! 💖</h1>
-  <h2>Welcome to the cutest demo in DevOps history!</h2>
-  <p>This is a playful HTML page for hot-reloading with Skaffold. Try changing things!</p>
+<h1>Hello from <span class="rainbow-text">Skaffold</span>! 💖</h1>
+<h2>Welcome to the cutest demo in DevOps history!</h2>
+<p>This is a playful HTML page for hot-reloading with Skaffold. Try changing things!</p>
 
-  <div class="heart">💗</div>
+<div class="heart">💗</div>
 
-  <button class="button" onclick="alert('You clicked me! 🥳')">Click me!</button>
-  <button class="button" onclick="logButtonClick()">Log something :)</button>
-  <p> Test </p>
-</body>
+<button class="button" onclick="showConfetti()">Click me!</button>
+<button class="button" onclick="logButtonClick()">Log something :)</button>
+<button class="button" onclick="createFloatingHearts()">Make Hearts!</button>
+
+<p> Test </p>
+
+<!-- Die Regenbogenkatze -->
+<div class="rainbow-cat">🐱</div>
+
+<!-- Container für Konfetti -->
+<div class="confetti-container" id="confetti-container"></div>
+
+<!-- Container für schwebende Herzen -->
+<div class="floating-hearts-container" id="hearts-container"></div>
+
 <script>
-  function logButtonClick() {
-    console.log("Button clicked!");
-    fetch("/logme")
-      .then(() => console.log("Logged to server"))
-      .catch(err => console.error("Log failed", err));
+function logButtonClick() {
+  console.log("Button clicked!");
+  fetch("/logme")
+    .then(() => console.log("Logged to server"))
+    .catch(err => console.error("Log failed", err));
+}
+
+// Konfetti-Funktion
+function showConfetti() {
+  alert('You clicked me! 🥳');
+  
+  const container = document.getElementById('confetti-container');
+  const colors = ['#ff69b4', '#ffb6c1', '#ffc0cb', '#ff1493', '#c71585'];
+  
+  // 50 Konfetti-Stücke erstellen
+  for (let i = 0; i < 50; i++) {
+    const confetti = document.createElement('div');
+    confetti.className = 'confetti';
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.left = Math.random() * 100 + '%';
+    confetti.style.top = '-10px';
+    confetti.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+    
+    // Animation hinzufügen
+    confetti.animate([
+      { top: '-10px', opacity: 1 },
+      { top: window.innerHeight + 'px', opacity: 0 }
+    ], {
+      duration: 1500 + Math.random() * 3000,
+      easing: 'cubic-bezier(0, .5, .5, 1)'
+    });
+    
+    container.appendChild(confetti);
+    
+    // Konfetti nach der Animation entfernen
+    setTimeout(() => {
+      confetti.remove();
+    }, 4500);
   }
+}
+
+// Schwebende Herzen erstellen
+function createFloatingHearts() {
+  console.log("createFloatingHearts called"); // Debugging
+
+  const container = document.getElementById('hearts-container');
+  if (!container) {
+    console.error("Container with ID 'hearts-container' not found");
+    return;
+  }
+
+  const heartTypes = ['💕', '💖', '💗', '💓', '💘'];
+  
+  for (let i = 0; i < 15; i++) {
+    const heart = document.createElement('div');
+    heart.className = 'floating-heart';
+    heart.textContent = heartTypes[Math.floor(Math.random() * heartTypes.length)];
+    heart.style.left = Math.random() * 100 + '%';
+    heart.style.bottom = '-20px';
+    
+    const duration = 3000 + Math.random() * 5000;
+    heart.style.animation = `float-up ${duration}ms ease-out forwards`;
+
+    console.log("Adding heart:", heart); // Debugging
+    container.appendChild(heart);
+    
+    setTimeout(() => {
+      heart.remove();
+      console.log("Heart removed"); // Debugging
+    }, duration);
+  }
+}
 </script>
+</body>
 </html>
